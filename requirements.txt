@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+
+pandas
+numpy
+xarray
+
+requests
+beautifulsoup4
+
+netCDF4
+scipy
+h5netcdf
+
+cdsapi

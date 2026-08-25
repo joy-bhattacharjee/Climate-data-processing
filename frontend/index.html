@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Climate Data Processing</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app-container">
+  <header class="header">
+    <div>
+      <h1>Climate Data Processing Platform</h1>
+      <p>Run each step of the pipeline from the browser. Download results.</p>
+    </div>
+    <div class="github-link">
+      <a href="https://github.com/YOUR_USERNAME/YOUR_REPOSITORY" target="_blank">View GitHub Repository</a>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <aside class="sidebar">
+      <h2>Configuration</h2>
+
+      <label>Start Year</label>
+      <input type="number" id="startYear" value="1985" />
+
+      <label>End Year</label>
+      <input type="number" id="endYear" value="2014" />
+
+      <label>Latitude</label>
+      <input type="number" step="0.0001" id="latitude" value="63.95" />
+
+      <label>Longitude</label>
+      <input type="number" step="0.0001" id="longitude" value="24.10" />
+
+      <label>Climate Model</label>
+      <select id="model">
+        <option value="ec_earth3_cc">EC-Earth3-CC</option>
+      </select>
+
+      <button id="saveConfigBtn" class="secondary-button">Save Configuration</button>
+    </aside>
+
+    <section class="content">
+      <div class="section-title">
+        <h2>Pipeline</h2>
+        <p>Run steps individually or as a full workflow.</p>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Download Gridded Historical Data</h3>
+          <p>Download temperature, precipitation, radiation, humidity grids.</p>
+        </div>
+        <button class="run-button" data-step="gridded-download">Run Step</button>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Process Gridded Historical Data</h3>
+          <p>Validate timeline and clean 1985–2014 output.</p>
+        </div>
+        <button class="run-button" data-step="gridded-process">Run Step</button>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Download Station Wind Data</h3>
+          <p>Scrape FMI portal and build hourly records.</p>
+        </div>
+        <button class="run-button" data-step="wind-download">Run Step</button>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Process Wind Observations</h3>
+          <p>Aggregate/validate daily wind series.</p>
+        </div>
+        <button class="run-button" data-step="wind-process">Run Step</button>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h3>Download CMIP6 Projections</h3>
+          <p>Request CDS, crop Sievi bbox, save annual NetCDFs.</p>
+        </div>
+        <button class="run-button" data-step="cmip6-download">Run Step</button>
+      </div>
+
+      <div class="run-all-container">
+        <button id="runAllBtn" class="run-all-button">Run Complete Pipeline</button>
+      </div>
+
+      <div class="console-container">
+        <div class="console-header">
+          <h3>Processing Log</h3>
+          <button id="clearLogBtn">Clear</button>
+        </div>
+        <pre id="logConsole">System ready.
+Waiting for pipeline execution...</pre>
+      </div>
+
+      <section class="outputs-section">
+        <h2>Generated Files</h2>
+        <div id="outputFiles" class="output-files">
+          <p>No output files yet.</p>
+        </div>
+        <button id="refreshOutputsBtn" class="secondary-button">Refresh Files</button>
+      </section>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
