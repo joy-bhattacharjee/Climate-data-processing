@@ -5,3 +5,7 @@ venv/
 outputs/*
 !outputs/.gitkeep
 frontend/.DS_Store
+
+# Local runtime logs and large climate downloads
+outputs/logs/
+**/__pycache__/

@@ -1,0 +1,59 @@
+{
+  "steps": [
+    {
+      "id": "1A",
+      "label": "Observed variables from Paituli",
+      "script": "backend/scripts_new/01_A_obs_var_from_1985_2014.py"
+    },
+    {
+      "id": "1B",
+      "label": "Download/process observed variables from Paituli",
+      "script": "backend/scripts_new/01_Dnld_and_process_obs_var_from_paituli.py"
+    },
+    {
+      "id": "2A",
+      "label": "Process FMI wind speed 1985\u20132014",
+      "script": "backend/scripts_new/02_A_Wsped_fmi_from_1985_2014.py"
+    },
+    {
+      "id": "2B",
+      "label": "Download FMI wind speed",
+      "script": "backend/scripts_new/02_Dnld_wsped_fmi.py"
+    },
+    {
+      "id": "3A",
+      "label": "Download CMIP6 climate variables",
+      "script": "backend/scripts_new/03_climate_all_var.py"
+    },
+    {
+      "id": "3C",
+      "label": "Merge observed variables except wind speed",
+      "script": "backend/scripts_new/05_Merge_all_obs_variables_except_windspeed.py"
+    },
+    {
+      "id": "4A",
+      "label": "Bias correct precipitation/temperature hist + SSPs",
+      "script": "backend/scripts_new/06_bias_corrected_pr_temp_hist_SSPs.py"
+    },
+    {
+      "id": "5B",
+      "label": "Modify dt files for simulation",
+      "script": "backend/scripts_new/09_modifying_all_other_dt_files_to_run_for_simulation.py"
+    },
+    {
+      "id": "N1",
+      "label": "Run 04_peocessing_climate_var_&_creating_ts_T_P.py",
+      "script": "backend/scripts_new/04_peocessing_climate_var_&_creating_ts_T_P.py"
+    },
+    {
+      "id": "N2",
+      "label": "Run 07_generating other_var_timeseries from bias corrected pr_&T.py",
+      "script": "backend/scripts_new/07_generating other_var_timeseries from bias corrected pr_&T.py"
+    },
+    {
+      "id": "N3",
+      "label": "Run 08_genrating_7_uniques_dt_files_from_combined_excel_file.py",
+      "script": "backend/scripts_new/08_genrating_7_uniques_dt_files_from_combined_excel_file.py"
+    }
+  ]
+}

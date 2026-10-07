@@ -1,24 +1,19 @@
-# -*- coding: utf-8 -*-
-
-
 from pathlib import Path
 import os, glob, zipfile
 import cdsapi
 import xarray as xr
 
-def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, model: str, output_dir: Path, logger=print):
-    # Important: requires a valid ~/.cdsapirc with CDS API key.
-    # For long downloads, consider running in a worker process/queue.
+def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, model: str, output_dir: Path, logger=print, is_cancelled=lambda: False):
     DATASET = "projections-cmip6"
     MODEL_ID = model or "ec_earth3_cc"
     ALL_MONTHS = [f"{m:02d}" for m in range(1, 13)]
     SIEVI_BBOX = {"lat_min": 63.7, "lat_max": 64.2, "lon_min": 23.9, "lon_max": 24.6}
     VARIABLES = {
         "temperature": "near_surface_air_temperature",
+        # "temp_max": "daily_maximum_near_surface_air_temperature",
+        # "temp_min": "daily_minimum_near_surface_air_temperature",
         "precipitation": "precipitation",
-        "wind_speed": "near_surface_wind_speed",
-        # "radiation": "surface_downwelling_shortwave_radiation",
-        # "humidity": "near_surface_relative_humidity",
+        # "wind_speed": "near_surface_wind_speed",
     }
     SCENARIO_CONFIGS = {
         "historical": {"experiment": "historical", "years": [str(y) for y in range(1985, 2015)]},
@@ -26,7 +21,6 @@ def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, m
         "ssp585": {"experiment": "ssp5_8_5", "years": [str(y) for y in range(2015, 2100)]},
     }
 
-    # Working directories inside outputs
     temp_dir = Path(output_dir) / "cmip6_temp"
     final_dir = Path(output_dir) / "sievi_cropped_netcdf_ready"
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -35,16 +29,15 @@ def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, m
     client = cdsapi.Client()
 
     for scen_key, cfg in SCENARIO_CONFIGS.items():
+        if is_cancelled(): raise RuntimeError("cancelled")
         logger(f"Scenario: {scen_key}")
-        requested_years = cfg["years"]
-
         for friendly, cds_var in VARIABLES.items():
+            if is_cancelled(): raise RuntimeError("cancelled")
             logger(f"  Variable: {friendly}")
             zip_path = temp_dir / f"raw_{friendly}_{scen_key}.zip"
             extract_dir = temp_dir / f"extracted_{friendly}_{scen_key}"
             extract_dir.mkdir(parents=True, exist_ok=True)
 
-            # remove stale zip
             if zip_path.exists():
                 try: zip_path.unlink()
                 except Exception: pass
@@ -55,15 +48,12 @@ def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, m
                 "variable": cds_var,
                 "model": MODEL_ID,
                 "month": ALL_MONTHS,
-                "year": requested_years,
+                "year": cfg["years"],
                 "format": "zip",
             }
 
             try:
-                logger("    Requesting CDS bundle...")
                 client.retrieve(DATASET, payload).download(str(zip_path))
-                logger("    Download complete; extracting...")
-                # cleanup extracted
                 for old in glob.glob(str(extract_dir / "*")):
                     try: os.remove(old)
                     except Exception: pass
@@ -76,7 +66,6 @@ def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, m
                     logger("    No NetCDF files found after extraction")
                     continue
 
-                logger("    Opening multi-file dataset...")
                 with xr.open_mfdataset(nc_files, combine="by_coords") as ds:
                     lat_key = "lat" if "lat" in ds.dims else ("latitude" if "latitude" in ds.dims else "y")
                     lon_key = "lon" if "lon" in ds.dims else ("longitude" if "longitude" in ds.dims else "x")
@@ -87,8 +76,8 @@ def run_cmip6_download(start_year: int, end_year: int, lat: float, lon: float, m
                         lat_slice = slice(SIEVI_BBOX["lat_min"], SIEVI_BBOX["lat_max"])
 
                     cropped = ds.sel({lat_key: lat_slice, lon_key: slice(SIEVI_BBOX["lon_min"], SIEVI_BBOX["lon_max"])})
-                    logger("    Writing annual NetCDFs...")
                     for year, ds_year in cropped.groupby("time.year"):
+                        if is_cancelled(): raise RuntimeError("cancelled")
                         out_file = final_dir / f"sievi_{friendly}_{scen_key}_{int(year)}.nc"
                         if out_file.exists():
                             continue
